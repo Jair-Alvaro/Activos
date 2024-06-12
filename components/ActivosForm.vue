@@ -1,0 +1,116 @@
+<template>
+    <div>
+      <div class="modal" @click="cerrarFormulario"></div>
+      <div class="formulario activo-form">
+        <h1>Crear Activo</h1>
+        <form @submit.prevent="crearActivo">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" v-model="activo.nombre" required>
+  
+          <label for="descripcion">Descripción:</label>
+          <textarea id="descripcion" v-model="activo.descripcion"></textarea>
+  
+          <label for="fabricante">Fabricante:</label>
+          <input type="text" id="fabricante" v-model="activo.fabricante">
+  
+          <label for="modelo">Modelo:</label>
+          <input type="text" id="modelo" v-model="activo.modelo">
+  
+          <label for="numero_pieza">Número de Pieza:</label>
+          <input type="text" id="numero_pieza" v-model="activo.numero_pieza">
+  
+          <label for="numero_serie">Número de Serie:</label>
+          <input type="text" id="numero_serie" v-model="activo.numero_serie">
+  
+          <label for="codigo">Código:</label>
+          <input type="text" id="codigo" v-model="activo.codigo">
+  
+          <button type="submit">Crear Activo</button>
+        </form>
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  import { defineComponent, ref } from 'vue';
+  import { createClient } from '@supabase/supabase-js';
+  
+  const supabaseUrl = 'https://nqpfkwmkparhpxjovixf.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xcGZrd21rcGFyaHB4am92aXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTc3OTg5NjEsImV4cCI6MjAzMzM3NDk2MX0.jkoYu7IOIDETPGI-qqhGbCGEX8FN-M7mqW39uzSexH0';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  export default defineComponent({
+    props: ['subareaId'],
+    setup(props, { emit }) {
+      const activo = ref({
+        nombre: '',
+        descripcion: '',
+        fabricante: '',
+        modelo: '',
+        numero_pieza: '',
+        numero_serie: '',
+        codigo: '',
+        id_subarea: props.subareaId
+      });
+  
+      const cerrarFormulario = () => {
+        emit('cerrarFormulario');
+      };
+  
+      const crearActivo = async () => {
+        try {
+          const { data, error } = await supabase.from('activos').insert([activo.value]);
+          if (error) {
+            throw error;
+          } else {
+            console.log('Activo creado:', data);
+            activo.value = {
+              nombre: '',
+              descripcion: '',
+              fabricante: '',
+              modelo: '',
+              numero_pieza: '',
+              numero_serie: '',
+              codigo: '',
+              id_subarea: props.subareaId
+            };
+            emit('cerrarFormulario');
+            emit('activoAgregado');
+          }
+        } catch (error) {
+          console.error('Error al crear el activo:', error.message);
+        }
+      };
+  
+      return {
+        activo,
+        crearActivo,
+        cerrarFormulario
+      };
+    }
+  });
+  </script>
+  
+  <style scoped>
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+  
+  .formulario {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    z-index: 1000;
+  }
+  </style>
+  
